@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,23 +6,30 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GraduationCap, User, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-// Demo credentials
-const DEMO_CREDENTIALS = {
-  student: { username: "john_doe", password: "password" },
-  staff: { username: "staff_admin", password: "staff123" },
-  admin: { username: "superadmin", password: "admin123" }
-};
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Login() {
-  const [username, setUsername] = useState("");
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [rollNo, setRollNo] = useState("");
+  const [department, setDepartment] = useState("");
+  const [yearOfStudy, setYearOfStudy] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, signIn, signUp, loading } = useAuth();
   
   const userType = searchParams.get("type") || "student";
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!loading && user) {
+      navigate('/dashboard/student');
+    }
+  }, [user, loading, navigate]);
   
   const getPortalInfo = () => {
     switch (userType) {
@@ -50,27 +57,64 @@ export default function Login() {
     }
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      if (isSignUp) {
+        if (!fullName || !rollNo) {
+          toast({
+            title: "Missing Information",
+            description: "Please fill in all required fields.",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
 
-    const credentials = DEMO_CREDENTIALS[userType as keyof typeof DEMO_CREDENTIALS];
-    
-    if (username === credentials.username && password === credentials.password) {
+        const { error } = await signUp(
+          email,
+          password,
+          fullName,
+          rollNo,
+          department || undefined,
+          yearOfStudy ? parseInt(yearOfStudy) : undefined
+        );
+
+        if (error) {
+          toast({
+            title: "Sign Up Failed",
+            description: error.message,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Sign Up Successful",
+            description: "Please check your email to verify your account.",
+          });
+        }
+      } else {
+        const { error } = await signIn(email, password);
+        
+        if (error) {
+          toast({
+            title: "Login Failed",
+            description: error.message,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Login Successful",
+            description: `Welcome to the ${getPortalInfo().title}!`,
+          });
+          navigate('/dashboard/student');
+        }
+      }
+    } catch (error) {
       toast({
-        title: "Login Successful",
-        description: `Welcome to the ${getPortalInfo().title}!`,
-      });
-      
-      // Navigate to appropriate dashboard
-      navigate(`/dashboard/${userType}`);
-    } else {
-      toast({
-        title: "Login Failed",
-        description: "Invalid username or password. Check demo credentials below.",
+        title: "Error",
+        description: "An unexpected error occurred.",
         variant: "destructive",
       });
     }
@@ -95,22 +139,74 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Login Form */}
+        {/* Auth Form */}
         <Card className="bg-gradient-card shadow-card border-border/50">
           <CardHeader>
-            <CardTitle>Sign In</CardTitle>
-            <CardDescription>Enter your credentials to access the portal</CardDescription>
+            <CardTitle>{isSignUp ? "Create Account" : "Sign In"}</CardTitle>
+            <CardDescription>
+              {isSignUp ? "Create your student account to access the portal" : "Enter your credentials to access the portal"}
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={handleAuth} className="space-y-4">
+              {isSignUp && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName">Full Name</Label>
+                    <Input
+                      id="fullName"
+                      type="text"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="Enter your full name"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="rollNo">Roll Number</Label>
+                    <Input
+                      id="rollNo"
+                      type="text"
+                      value={rollNo}
+                      onChange={(e) => setRollNo(e.target.value)}
+                      placeholder="Enter your roll number"
+                      required
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="department">Department (Optional)</Label>
+                      <Input
+                        id="department"
+                        type="text"
+                        value={department}
+                        onChange={(e) => setDepartment(e.target.value)}
+                        placeholder="e.g. Computer Science"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="yearOfStudy">Year (Optional)</Label>
+                      <Input
+                        id="yearOfStudy"
+                        type="number"
+                        min="1"
+                        max="5"
+                        value={yearOfStudy}
+                        onChange={(e) => setYearOfStudy(e.target.value)}
+                        placeholder="1-5"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter your username"
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
                   required
                 />
               </div>
@@ -130,23 +226,36 @@ export default function Login() {
                 className="w-full bg-gradient-primary hover:bg-primary-glow shadow-card hover:shadow-card-hover"
                 disabled={isLoading}
               >
-                {isLoading ? "Signing in..." : "Sign In"}
+                {isLoading ? (isSignUp ? "Creating Account..." : "Signing in...") : (isSignUp ? "Create Account" : "Sign In")}
               </Button>
             </form>
-          </CardContent>
-        </Card>
-
-        {/* Demo Credentials */}
-        <Card className="bg-muted/30 border-muted">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Demo Credentials</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-xs space-y-1 text-muted-foreground">
-              <div><strong>Current Portal:</strong> {DEMO_CREDENTIALS[userType as keyof typeof DEMO_CREDENTIALS].username} / {DEMO_CREDENTIALS[userType as keyof typeof DEMO_CREDENTIALS].password}</div>
+            
+            <div className="mt-4 text-center">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="text-sm text-muted-foreground hover:text-foreground"
+              >
+                {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
+              </Button>
             </div>
           </CardContent>
         </Card>
+
+{userType === 'student' && (
+          <Card className="bg-muted/30 border-muted">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm">Student Portal</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="text-xs space-y-1 text-muted-foreground">
+                <p>Create a new account or sign in with your existing credentials.</p>
+                <p>After signup, check your email for verification.</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Back to Home */}
         <div className="text-center">
