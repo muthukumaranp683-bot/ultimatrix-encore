@@ -258,6 +258,7 @@ export type Database = {
           department: string | null
           designation: string | null
           staff_id: string
+          subject: string | null
           user_id: string | null
         }
         Insert: {
@@ -265,6 +266,7 @@ export type Database = {
           department?: string | null
           designation?: string | null
           staff_id?: string
+          subject?: string | null
           user_id?: string | null
         }
         Update: {
@@ -272,6 +274,7 @@ export type Database = {
           department?: string | null
           designation?: string | null
           staff_id?: string
+          subject?: string | null
           user_id?: string | null
         }
         Relationships: [
