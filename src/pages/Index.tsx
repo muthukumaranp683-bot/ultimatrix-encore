@@ -113,50 +113,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Demo Credentials */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="mx-auto max-w-4xl">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-foreground mb-4">Demo Credentials</h2>
-            <p className="text-muted-foreground">Use these credentials to explore different portal features</p>
-          </div>
-          
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            <div className="bg-gradient-card shadow-card rounded-lg p-6 border border-border/50">
-              <h3 className="font-semibold text-foreground mb-2 flex items-center">
-                <GraduationCap className="h-4 w-4 mr-2 text-primary" />
-                Student
-              </h3>
-              <div className="text-sm space-y-1 text-muted-foreground">
-                <div><strong>Username:</strong> john_doe</div>
-                <div><strong>Password:</strong> password</div>
-              </div>
-            </div>
-            
-            <div className="bg-gradient-card shadow-card rounded-lg p-6 border border-border/50">
-              <h3 className="font-semibold text-foreground mb-2 flex items-center">
-                <User className="h-4 w-4 mr-2 text-academic-green" />
-                Staff
-              </h3>
-              <div className="text-sm space-y-1 text-muted-foreground">
-                <div><strong>Username:</strong> staff_admin</div>
-                <div><strong>Password:</strong> staff123</div>
-              </div>
-            </div>
-            
-            <div className="bg-gradient-card shadow-card rounded-lg p-6 border border-border/50">
-              <h3 className="font-semibold text-foreground mb-2 flex items-center">
-                <Shield className="h-4 w-4 mr-2 text-academic-orange" />
-                Super Admin
-              </h3>
-              <div className="text-sm space-y-1 text-muted-foreground">
-                <div><strong>Username:</strong> superadmin</div>
-                <div><strong>Password:</strong> admin123</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Footer */}
       <footer className="container mx-auto px-4 py-8 border-t border-border/50">

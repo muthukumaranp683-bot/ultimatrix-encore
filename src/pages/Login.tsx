@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { GraduationCap, User, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Login() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -27,9 +28,34 @@ export default function Login() {
   // Redirect if already authenticated
   useEffect(() => {
     if (!loading && user) {
-      navigate('/dashboard/student');
+      redirectBasedOnRole();
     }
   }, [user, loading, navigate]);
+
+  const redirectBasedOnRole = async () => {
+    if (!user) return;
+    
+    const { data } = await supabase.from('users')
+      .select('role')
+      .eq('user_id', user.id)
+      .single();
+    
+    const role = data?.role;
+    
+    switch (role) {
+      case 'student':
+        navigate('/dashboard/student');
+        break;
+      case 'staff':
+        navigate('/dashboard/staff');
+        break;
+      case 'superadmin':
+        navigate('/dashboard/superadmin');
+        break;
+      default:
+        navigate('/dashboard/student');
+    }
+  };
   
   const getPortalInfo = () => {
     switch (userType) {
@@ -108,7 +134,7 @@ export default function Login() {
             title: "Login Successful",
             description: `Welcome to the ${getPortalInfo().title}!`,
           });
-          navigate('/dashboard/student');
+          // Redirect will be handled by the useEffect
         }
       }
     } catch (error) {

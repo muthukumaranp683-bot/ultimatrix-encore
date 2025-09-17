@@ -93,6 +93,18 @@ export function useAuth() {
     return { data, error };
   };
 
+  const getUserRole = async () => {
+    if (!authState.session?.user) return null;
+    
+    const { data } = await supabase
+      .from('users')
+      .select('role')
+      .eq('user_id', authState.session.user.id)
+      .single();
+    
+    return data?.role || null;
+  };
+
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     return { error };
@@ -103,5 +115,6 @@ export function useAuth() {
     signIn,
     signUp,
     signOut,
+    getUserRole,
   };
 }
