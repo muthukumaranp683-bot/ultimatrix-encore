@@ -78,6 +78,14 @@ export function useAuth() {
         });
 
       if (!userError) {
+        // Assign student role
+        await supabase
+          .from('user_roles')
+          .insert({
+            user_id: data.user.id,
+            role: 'student'
+          });
+
         // Create student record
         await supabase
           .from('students')
@@ -97,10 +105,10 @@ export function useAuth() {
     if (!authState.session?.user) return null;
     
     const { data } = await supabase
-      .from('users')
+      .from('user_roles')
       .select('role')
       .eq('user_id', authState.session.user.id)
-      .single();
+      .maybeSingle();
     
     return data?.role || null;
   };

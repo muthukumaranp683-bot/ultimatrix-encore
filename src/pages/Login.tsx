@@ -35,10 +35,10 @@ export default function Login() {
   const redirectBasedOnRole = async () => {
     if (!user) return;
     
-    const { data } = await supabase.from('users')
+    const { data } = await supabase.from('user_roles')
       .select('role')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
     
     const role = data?.role;
     

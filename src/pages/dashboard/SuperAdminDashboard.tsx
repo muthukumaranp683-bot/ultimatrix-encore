@@ -141,6 +141,23 @@ export default function SuperAdminDashboard() {
         return;
       }
 
+      // Assign staff role
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: authData.user.id,
+          role: 'staff'
+        });
+
+      if (roleError) {
+        toast({
+          title: "Error assigning staff role",
+          description: roleError.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Add to staff table
       const { error: staffError } = await supabase
         .from('staff')
