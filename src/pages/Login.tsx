@@ -89,6 +89,17 @@ export default function Login() {
 
     try {
       if (isSignUp) {
+        // Only allow signup for students
+        if (userType !== 'student') {
+          toast({
+            title: "Sign Up Not Allowed",
+            description: "Staff and Admin accounts must be created by a Super Admin.",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+
         if (!fullName || !rollNo) {
           toast({
             title: "Missing Information",
@@ -175,7 +186,7 @@ export default function Login() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleAuth} className="space-y-4">
-              {isSignUp && (
+              {isSignUp && userType === 'student' && (
                 <>
                   <div className="space-y-2">
                     <Label htmlFor="fullName">Full Name</Label>
@@ -256,16 +267,26 @@ export default function Login() {
               </Button>
             </form>
             
-            <div className="mt-4 text-center">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setIsSignUp(!isSignUp)}
-                className="text-sm text-muted-foreground hover:text-foreground"
-              >
-                {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
-              </Button>
-            </div>
+            {userType === 'student' && (
+              <div className="mt-4 text-center">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setIsSignUp(!isSignUp)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
+                  {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
+                </Button>
+              </div>
+            )}
+
+            {userType !== 'student' && (
+              <div className="mt-4 text-center">
+                <p className="text-xs text-muted-foreground">
+                  {userType === 'staff' ? 'Staff' : 'Admin'} accounts must be created by a Super Admin
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
